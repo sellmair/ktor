@@ -12,6 +12,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.*
+import org.fusesource.jansi.*
 import org.slf4j.*
 import org.slf4j.event.*
 import java.util.concurrent.*
@@ -84,7 +85,10 @@ class CallLoggingTest {
             handleRequest(HttpMethod.Get, "/")
         }
 
-        assertTrue("TRACE: 404 Not Found: GET - /" in messages)
+        assertTrue(
+            "TRACE: ${colored("404 Not Found", Ansi.Color.RED)}: " +
+                "${colored("GET", Ansi.Color.CYAN)} - /" in messages
+        )
     }
 
     @Test
@@ -95,7 +99,10 @@ class CallLoggingTest {
             }
         }
 
-        assertTrue("TRACE: 200 OK: GET - /" in messages)
+        assertTrue(
+            "TRACE: ${colored("200 OK", Ansi.Color.GREEN)}: " +
+                "${colored("GET", Ansi.Color.CYAN)} - /" in messages
+        )
     }
 
     @Test
@@ -106,7 +113,10 @@ class CallLoggingTest {
             }
         }
 
-        assertTrue("TRACE: 404 Not Found: GET - /" in messages)
+        assertTrue(
+            "TRACE: ${colored("404 Not Found", Ansi.Color.RED)}: " +
+                "${colored("GET", Ansi.Color.CYAN)} - /" in messages
+        )
     }
 
     @Test
@@ -155,8 +165,14 @@ class CallLoggingTest {
             }
         }
 
-        assertTrue("TRACE: 404 Not Found: GET - /" in messages)
-        assertFalse("TRACE: 404 Not Found: GET - /avoid" in messages)
+        assertTrue(
+            "TRACE: ${colored("404 Not Found", Ansi.Color.RED)}: " +
+                "${colored("GET", Ansi.Color.CYAN)} - /" in messages
+        )
+        assertFalse(
+            "TRACE: ${colored("404 Not Found", Ansi.Color.RED)}: " +
+                "${colored("GET", Ansi.Color.CYAN)} - /avoid" in messages
+        )
     }
 
     @Test
@@ -176,7 +192,10 @@ class CallLoggingTest {
             }
         }
 
-        assertTrue("DEBUG: 404 Not Found: GET - /" in messages)
+        assertTrue(
+            "DEBUG: ${colored("404 Not Found", Ansi.Color.RED)}: " +
+                "${colored("GET", Ansi.Color.CYAN)} - /" in messages
+        )
     }
 
     @Test
@@ -210,7 +229,12 @@ class CallLoggingTest {
                 handleRequest(HttpMethod.Get, "/uri1").let { call ->
                     assertTrue { "INFO: test message [mdc-call-id=generated-call-id-0, mdc-uri=/uri1]" in messages }
                     assertTrue {
-                        "TRACE: 200 OK: GET - /uri1 [mdc-call-id=generated-call-id-0, mdc-uri=/uri1]" in messages
+                        "TRACE: ${colored("200 OK", Ansi.Color.GREEN)}: ${
+                            colored(
+                                "GET",
+                                Ansi.Color.CYAN
+                            )
+                        } - /uri1 [mdc-call-id=generated-call-id-0, mdc-uri=/uri1]" in messages
                     }
                 }
             }
@@ -249,7 +273,12 @@ class CallLoggingTest {
                 handleRequest(HttpMethod.Get, "/uri1").let { call ->
                     assertTrue { "INFO: test message [mdc-call-id=generated-call-id-0, mdc-uri=/uri1]" in messages }
                     assertTrue {
-                        "TRACE: 200 OK: GET - /uri1 [mdc-call-id=generated-call-id-0, mdc-uri=/uri1]" in messages
+                        "TRACE: ${colored("200 OK", Ansi.Color.GREEN)}: ${
+                            colored(
+                                "GET",
+                                Ansi.Color.CYAN
+                            )
+                        } - /uri1 [mdc-call-id=generated-call-id-0, mdc-uri=/uri1]" in messages
                     }
                 }
             }
@@ -283,4 +312,8 @@ class CallLoggingTest {
         assertTrue(customMessages.all { it.startsWith("CUSTOM TRACE:") && it.contains(hash!!) })
         assertTrue(messages.isEmpty())
     }
+
+    private fun colored(value: Any, color: Ansi.Color): String =
+        Ansi.ansi().fg(color).a(value).reset().toString()
+
 }
