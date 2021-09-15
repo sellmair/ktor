@@ -313,6 +313,23 @@ class CallLoggingTest {
         assertTrue(messages.isEmpty())
     }
 
+    @Test
+    fun `can log without colors`() {
+        val environment = createTestEnvironment {
+            module {
+                install(CallLogging) {
+                    disableDefaultColors()
+                }
+            }
+        }
+
+        withApplication(environment) {
+            handleRequest(HttpMethod.Get, "/")
+        }
+
+        assertTrue("TRACE: 404 Not Found: GET - /" in messages)
+    }
+
     private fun colored(value: Any, color: Ansi.Color): String =
         Ansi.ansi().fg(color).a(value).reset().toString()
 
